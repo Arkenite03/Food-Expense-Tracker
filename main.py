@@ -14,6 +14,10 @@ import os
 orders = []
 swiggy_orders = []
 count = 0
+swiggy_monthly_total_amount = []
+swiggy_monthly_total_orders = []
+zomato_monthly_total_amount = []
+zomato_monthly_total_orders = []
 
 def get_swiggy(soup):
 
@@ -176,13 +180,13 @@ def find_and_click_next_button(driver, soup):
 
 def zomato_expense_tracker(driver):
     
-    global orders
+    global orders, zomato_monthly_total_amount, zomato_monthly_total_orders
     
     # URL of Swiggy account orders page
     zomato_orders_url = "https://www.zomato.com/users/vishwa-sharma-37028572/ordering"
 
-    # driver.get(zomato_orders_url)
-    # time.sleep(35)  # Allow time for the page to load
+    driver.get(zomato_orders_url)
+    time.sleep(35)  # Allow time for the page to load
 
     driver.get(zomato_orders_url)
     time.sleep(3)  # Allow time for the page to load
@@ -223,12 +227,14 @@ def zomato_expense_tracker(driver):
 
     # Calculate the monthly total amount
     monthly_total_amount = df.groupby(['year', 'month'])['amount'].sum()
+    zomato_monthly_total_amount = monthly_total_amount
 
     print(monthly_total_amount)
 
     # 3. monthly total orders
 
     monthly_total_orders = df.groupby(['year', 'month']).size()
+    zomato_monthly_total_orders = monthly_total_orders
 
     print(monthly_total_orders)
     
@@ -248,10 +254,11 @@ def zomato_expense_tracker(driver):
 
 def swiggy_expense_tracker(driver):
     
-    global swiggy_orders, count
+    global swiggy_orders, count, swiggy_monthly_total_amount, swiggy_monthly_total_orders
     swiggy_orders_url = "https://www.swiggy.com/my-account/orders"
-    # driver.get(swiggy_orders_url)
-    # time.sleep(35)  # Allow time for the page to load
+    
+    driver.get(swiggy_orders_url)
+    time.sleep(35)  # Allow time for the page to load
 
     driver.get(swiggy_orders_url)
     time.sleep(5)  # Allow time for the page to load
@@ -297,12 +304,14 @@ def swiggy_expense_tracker(driver):
     df.to_excel('/Users/vishwsh2/Projects/Food Expense tracker/swiggy_orders.xlsx', index=False)
     monthly_total_amount = df.groupby(['year', 'month'])['amount'].sum()
     monthly_total_amount.to_excel('/Users/vishwsh2/Projects/Food Expense tracker/swiggy_monthly_total_amount.xlsx')
+    swiggy_monthly_total_amount = monthly_total_amount
     print(type(monthly_total_amount))
     
     # 3. monthly total orders
     
     monthly_total_orders = df.groupby(['year', 'month']).size()
     monthly_total_orders.to_excel('/Users/vishwsh2/Projects/Food Expense tracker/swiggy_monthly_total_orders.xlsx')
+    swiggy_monthly_total_orders = monthly_total_orders
     print(monthly_total_orders)
     
 
@@ -320,6 +329,26 @@ if __name__ == "__main__":
 
     swiggy_expense_tracker(driver)
     zomato_expense_tracker(driver)
+    
+    # Combine zomato_monthly_total_amount and swiggy_monthly_total_amount
+    
+    monthly_total_amount = zomato_monthly_total_amount.add(swiggy_monthly_total_amount, fill_value=0)
+    print(monthly_total_amount)
+    
+    # Combine zomato_monthly_total_orders and swiggy_monthly_total_orders
+    
+    monthly_total_orders = zomato_monthly_total_orders.add(swiggy_monthly_total_orders, fill_value=0)
+    print(monthly_total_orders)
+    
+    # Delete the files if they already exist
+    
+    if os.path.exists('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_amount.xlsx'):
+        os.remove('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_amount.xlsx')
+    if os.path.exists('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_orders.xlsx'):
+        os.remove('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_orders.xlsx')
+    
+    monthly_total_amount.to_excel('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_amount.xlsx', index=True)
+    monthly_total_orders.to_excel('/Users/vishwsh2/Projects/Food Expense tracker/monthly_total_orders.xlsx', index=True) 
 
     # Close the browser
     driver.quit()
