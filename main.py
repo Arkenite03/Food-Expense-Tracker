@@ -63,7 +63,9 @@ def get_swiggy(soup):
     
 
 def get_zomato2(soup):
-    
+
+# Note: currently not considering the not delivered orders/failed payments/ cancelled orders
+
 # <div class="sc-kqEXUp jJNbJu">
 #     <div class="sc-gneEKw hxhsEY">
 #         <p class="sc-bXopBW hVyhyV">Order Number</p>
